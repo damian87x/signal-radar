@@ -1,0 +1,110 @@
+[
+  {
+    "id": "msg-01",
+    "subject": "Quick question about the roadmap doc",
+    "from": "Alex Rivera <alex.rivera@example-corp.test>",
+    "content": "Hey, could you take a look at the roadmap doc I shared yesterday and tell me if the Q3 dates still work for you? Would love your take before our sync tomorrow.",
+    "date": "2026-09-10T09:12:00.000Z"
+  },
+  {
+    "id": "msg-02",
+    "subject": "50% off everything this weekend only!",
+    "from": "Deals Newsletter <deals@example-shop.test>",
+    "content": "Huge weekend sale! Everything in the store is 50% off. Shop now before it's gone. Click here to browse the collection.",
+    "date": "2026-09-10T10:00:00.000Z",
+    "headers": "List-Unsubscribe: <mailto:unsub@example-shop.test>"
+  },
+  {
+    "id": "msg-03",
+    "subject": "Your card ending 4321 was charged $42.00",
+    "from": "Card Alerts <alerts@example-bank.test>",
+    "snippet": "A purchase of $42.00 was made at Example Coffee Co. on your card ending 4321. If this wasn't you, contact us right away.",
+    "date": "2026-09-10T11:05:00.000Z"
+  },
+  {
+    "id": "msg-04",
+    "subject": "Let's connect - growth marketing for example-corp",
+    "from": "Jordan Sales <jordan@growth-agency.test>",
+    "content": "Hi there, I help companies like yours grow through targeted outreach. Do you have 15 minutes this week for a quick call to see if we're a fit?",
+    "date": "2026-09-10T12:30:00.000Z"
+  },
+  {
+    "id": "msg-05",
+    "subject": "URGENT: your account will be suspended",
+    "from": "Security Team <security@totally-legit-bank.test>",
+    "content": "Your account has been flagged for suspicious activity. Click the link below immediately and enter your password to avoid suspension.",
+    "date": "2026-09-10T13:00:00.000Z"
+  },
+  {
+    "id": "msg-06",
+    "subject": "Sponsorship opportunity for your channel",
+    "from": "Priya Shah <priya@brandpartners.test>",
+    "content": "We love your recent content and think there's a great sponsorship fit with our new product line. Would you be open to discussing a paid brand deal?",
+    "date": "2026-09-11T08:15:00.000Z"
+  },
+  {
+    "id": "msg-07",
+    "subject": "Weekly digest: what you missed",
+    "from": "The Roundup <hello@theroundup.test>",
+    "snippet": "This week: five articles on productivity, a new podcast episode, and reader questions answered.",
+    "date": "2026-09-11T09:00:00.000Z",
+    "headers": "List-Unsubscribe: <mailto:unsub@theroundup.test>"
+  },
+  {
+    "id": "msg-08",
+    "subject": "Your order has shipped",
+    "from": "Orders <orders@example-shop.test>",
+    "content": "Good news! Your order #48213 has shipped and is on its way. Track your package using the link below.",
+    "date": "2026-09-11T10:20:00.000Z"
+  },
+  {
+    "id": "msg-09",
+    "subject": "Following up on our conversation",
+    "from": "Sam Lee <sam.lee@example-corp.test>",
+    "content": "Hi, just following up on what we talked about at lunch. Any thoughts on the proposal? Happy to hop on a call this week.",
+    "date": "2026-09-11T14:45:00.000Z"
+  },
+  {
+    "id": "msg-10",
+    "subject": "You've won a free iPhone!!!",
+    "from": "Prize Center <no-reply@totally-real-prizes.test>",
+    "content": "Congratulations! You have been selected to receive a free iPhone. Claim your prize now by entering your details.",
+    "date": "2026-09-11T15:10:00.000Z"
+  },
+  {
+    "id": "msg-11",
+    "subject": "New product creator collab - are you interested?",
+    "from": "Morgan Blake <morgan@newco-products.test>",
+    "content": "We're launching a new product and think you'd be a perfect creator partner. Could send samples and discuss a paid collaboration if you're interested.",
+    "date": "2026-09-12T08:00:00.000Z"
+  },
+  {
+    "id": "msg-12",
+    "subject": "Your monthly statement is ready",
+    "from": "Billing <billing@example-utility.test>",
+    "snippet": "Your statement for September is now available. Amount due: $85.20, due by September 28.",
+    "date": "2026-09-12T09:30:00.000Z"
+  },
+  {
+    "id": "msg-13",
+    "subject": "Increase your sales pipeline with our CRM",
+    "from": "Outbound Team <outbound@some-crm-vendor.test>",
+    "content": "We help teams like yours close more deals faster. Reply to this email or book a demo to see how our CRM can fit your workflow.",
+    "date": "2026-09-12T11:00:00.000Z"
+  },
+  {
+    "id": "msg-14",
+    "subject": "Reminder: dinner Friday at 7?",
+    "from": "Casey Nguyen <casey.n@personalmail.test>",
+    "content": "Hey! Just checking we're still on for dinner Friday at 7pm. Let me know if that still works for you.",
+    "date": "2026-09-12T18:00:00.000Z"
+  },
+  {
+    "id": "msg-15",
+    "subject": "New content ideas + community update",
+    "from": "Creator Community <hello@creatorcommunity.test>",
+    "snippet": "This month's roundup of community highlights, upcoming events, and content prompts to try.",
+    "date": "2026-09-13T07:00:00.000Z",
+    "headers": "List-Unsubscribe: <mailto:unsub@creatorcommunity.test>"
+  }
+]

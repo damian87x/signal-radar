@@ -1,0 +1,12 @@
+{
+  "name": "signal-radar",
+  "owner": {"name": "Damian Borek"},
+  "metadata": {"description": "signal-radar skill and /radar command for Claude Code."},
+  "plugins": [
+    {
+      "name": "signal-radar",
+      "source": "./",
+      "description": "Scan X, TikTok, creators and email read-only; Jev scores, Grok explains the top items, digest to ~/.signal-radar."
+    }
+  ]
+}

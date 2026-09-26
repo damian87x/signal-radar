@@ -1,0 +1,182 @@
+# signal-radar
+
+A local, read-only radar for four lanes: X posts, TikTok products, creators,
+and email. [TypeSafe Jev](https://typesafe.ai) scores every item in under a
+second for a fraction of a cent. Headless [Grok](https://x.ai) writes a
+one-line "why it matters" for only the top few. You get a digest.
+
+```bash
+signal-radar x                      # good AI posts from your home feed
+signal-radar x @karpathy list:123   # specific accounts / lists
+signal-radar tiktok "ai gadget"     # products being sold, with momentum
+signal-radar creators               # shortlist authors of top posts + outreach angle drafts
+signal-radar mail ~/export.json     # brand-deal and sponsorship leads in your inbox
+```
+
+It ships three ways from this one repo:
+
+| | Install | You get |
+|---|---|---|
+| CLI | `npm i -g github:damian87x/signal-radar` | the `signal-radar` command |
+| pi | `pi install git:github.com/damian87x/signal-radar` | `signal_radar` tool, `/radar` command, `signal-radar` skill |
+| Claude Code | `claude plugin marketplace add damian87x/signal-radar` then `claude plugin install signal-radar@signal-radar` | `signal-radar` skill, `/signal-radar:radar` command |
+
+The pi and Claude Code integrations call the CLI, so install it too.
+Requirements: Node 24; the `jev` CLI on your PATH with a TypeSafe key (it
+ships as `bin/jev` in
+[hermes-jev-skills](https://github.com/kerpopule/hermes-jev-skills), which is
+stdlib-only Python and runs without Hermes; run `jev doctor` to check); and the
+`grok` CLI (xAI Grok Build), logged in, for enrichment. Each lane also needs
+its own source tool; see Credentials below.
+
+## How it works
+
+For each run:
+
+1. **Fetch.** One lane's source (`src/sources/*.ts`) pulls new items and they're
+   upserted into a local SQLite store (deduped on `(lane, id)`).
+2. **Score.** `jev ask` scores every unscored item in the store against the
+   lane's rubric (`src/rubrics/*.ts`) — fast and cheap, no LLM generation.
+3. **Enrich.** `grok` (headless, schema-constrained) enriches only the top
+   `--enrich-top` undelivered items that clear the rubric's rank threshold.
+   Items already enriched are never re-sent to grok.
+4. **Digest.** A preview is written to `<out>/<date>.html` and `<out>/digest.md`
+   on every run, dry or not.
+5. **Deliver.** On a non-dry run, each undelivered top item is marked
+   delivered and the digest markdown is written to a new
+   `<out>/outbox/<timestamp>-<lane>.md` file. A pi job is expected to forward
+   that file's content to Telegram and then delete it — signal-radar itself
+   never talks to Telegram.
+
+## Develop
+
+```bash
+git clone https://github.com/damian87x/signal-radar && cd signal-radar
+npm ci && npm link    # global `signal-radar` pointing at this checkout
+npm test
+```
+
+The store uses `node:sqlite`, so Node 24 is required.
+
+## Credentials
+
+### X — twitter-cli cookies
+
+The X lane shells out to the `twitter` CLI (agent-reach backend), which needs
+an authenticated cookie session:
+
+```bash
+pbpaste | agent-reach configure twitter-cookies --stdin   # or: xclip -o | ...
+# --stdin keeps the cookies out of the process list; --from-browser chrome also works
+twitter status   # confirm the session is authenticated
+```
+
+Export cookies for x.com with the Cookie-Editor browser extension and paste
+the JSON. Cookies expire; re-run `twitter status` if the X lane starts
+failing with an auth error.
+
+### TikTok — opencli + logged-in Chrome
+
+The TikTok lane reads search/hashtag pages through `opencli`'s bridge to a
+Chrome profile that is already logged into TikTok. No separate credential
+step in this repo — make sure `opencli` is running and the Chrome profile is
+signed in before running the `tiktok` lane.
+
+### Mail — JSON export
+
+The mail lane reads a local JSON export, not a live Gmail connection. Each
+message needs `id`, `subject`, `from`, one of `snippet`/`content`, and
+`date`:
+
+```json
+[{ "id": "1", "subject": "...", "from": "a@b.com", "snippet": "...", "date": "2026-09-24" }]
+```
+
+**Warning:** `jev mail` sends the message subject and content (as a temp
+file, never stdin) to TypeSafe's API for sorting. Only run the mail lane on
+an export you're comfortable sending off-machine.
+
+## X query forms
+
+Each source after `signal-radar x` (default: `feed`) maps to a read-only
+`twitter` subcommand:
+
+- `feed` — home timeline (`twitter feed`)
+- `@handle` — a user's posts (`twitter user-posts`)
+- `list:<id>` — a Twitter List (`twitter list`)
+- anything else — free-text search (`twitter search`)
+
+**Known issue (2026-09-24):** `twitter-cli` 0.8.5's `search` returns HTTP 404
+(`x_search_unavailable`) upstream. Use `feed`, `@handle`, or `list:<id>`
+until that's fixed.
+
+## Commands
+
+```bash
+signal-radar x                         # your home feed
+signal-radar x @karpathy list:123      # user posts, lists
+signal-radar tiktok "ai gadget" "#airpods"
+signal-radar creators                  # shortlist authors of top posts
+signal-radar mail ~/export.json        # sort a Gmail JSON export
+```
+
+Flags: `--top N` (how many top items grok enriches and delivers, default
+`10`), `--dry` (write the digest, deliver nothing), `--json` (print counts as
+JSON), `--home <dir>` (data dir). Everything — `radar.db`, `<date>.html`,
+`digest.md`, `outbox/` — lives in `~/.signal-radar` unless you set
+`SIGNAL_RADAR_HOME` or `--home`. The long form `signal-radar run --lane x
+--queries a,b --enrich-top N [--db] [--out] [--mail-file]` still works.
+
+## Tests
+
+```bash
+npm test              # stubbed runners only, no network/API calls
+LIVE=1 npm test        # also runs the opt-in suites against real jev/grok
+```
+
+## Schedule (pi-schedule-prompt)
+
+`pi-schedule-prompt` is a pi extension whose `schedule_prompt` tool injects a
+prompt into a pi session on a cron/interval/relative schedule; it does not
+run shell commands directly, so the scheduled prompt below is a natural-
+language instruction for the pi agent to execute (verified against the
+installed package's README via `npm view pi-schedule-prompt readme`; the
+exact wording of the prompt text itself is not a documented API and is
+illustrative):
+
+```
+schedule "run the signal-radar X lane, then forward any new files under
+~/.signal-radar/outbox/ to Telegram and delete each one after
+forwarding" every 3 hours
+```
+
+which the agent turns into a `schedule_prompt` tool call along the lines of
+`{ action: "add", type: "interval", schedule: "3h", prompt: "..." }`.
+
+## Costs (measured 2026-09-24)
+
+- `jev ask` — roughly $0.00003–$0.00006 per judgment call (orchestrator
+  ledger).
+- `grok` enrich — roughly $0.021 per enriched item (measured ~30k input
+  tokens per call). This is why `--enrich-top` defaults to 10, and why an
+  item that already has an `enrich_json` row is never sent to grok again.
+- A live run over 50 real X feed posts ranked genuine AI launches around
+  0.5–0.7 and scams/ads/engagement-bait around 0.00–0.01.
+
+## Safety
+
+- Read-only everywhere: no post, reply, like, follow, retweet, bookmark, or
+  delete calls anywhere in `src/`. `test/readonly.test.ts` statically scans
+  every source file for write-side CLI subcommands/flags and HTTP
+  POST/PUT/DELETE calls and fails the suite if any appear.
+- `grok` runs headless with `--tools ''`, `--disable-web-search`, and
+  `--permission-mode plan` — no tool use, no web access, no write actions.
+- All scraped/emailed text is wrapped in a delimited data block and the prompt
+  tells jev/grok to treat it as untrusted data. For grok the delimiter is
+  nonce-tagged and neutralised; the mail rubric escapes `<`/`>`. Known gap:
+  the x/tiktok/creators rubrics use fixed markers without escaping, so a
+  crafted post can nudge its own jev score (jev only returns probabilities —
+  it cannot act).
+- No auto-DM, auto-reply, or auto-follow. The creators lane only aggregates
+  and scores authors already seen in other lanes; nothing here contacts
+  anyone.

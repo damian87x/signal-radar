@@ -1,0 +1,162 @@
+[
+  {
+    "id": "x-good-01",
+    "label": "good",
+    "author": "nova_ai_labs",
+    "text": "We just shipped Atlas-mini: 40% cheaper than our previous small model, 128k context window, better function calling. Benchmarks: nova-labs.ai/atlas-mini. Available now via API.",
+    "metrics": { "likes": 812, "retweets": 140, "replies": 63, "views": 41000 },
+    "createdAt": "2026-09-22T14:03:00Z"
+  },
+  {
+    "id": "x-good-02",
+    "label": "good",
+    "author": "openlab_research",
+    "text": "New paper: trained a 7B model on 500B tokens of synthetic math data, hit 62% on MATH benchmark vs 41% for the base model. Code + weights: github.com/openlab/synth-math",
+    "metrics": { "likes": 530, "retweets": 210, "replies": 44, "views": 28000 },
+    "createdAt": "2026-09-21T09:15:00Z"
+  },
+  {
+    "id": "x-good-03",
+    "label": "good",
+    "author": "ragcheck_dev",
+    "text": "Shipped v2 of our open-source RAG eval harness: hybrid search scoring, 12 new metrics, a CLI flag to diff two runs. pip install ragcheck==2.0",
+    "metrics": { "likes": 190, "retweets": 51, "replies": 12, "views": 9800 },
+    "createdAt": "2026-09-20T18:40:00Z"
+  },
+  {
+    "id": "x-good-04",
+    "label": "good",
+    "author": "evals_guy",
+    "text": "Ran the same 50-prompt coding eval on 3 frontier models this week. Model A won 31/50, mostly on multi-file refactors. Full spreadsheet: bit.ly/coding-evals-w38",
+    "metrics": { "likes": 640, "retweets": 175, "replies": 88, "views": 33000 },
+    "createdAt": "2026-09-19T11:22:00Z"
+  },
+  {
+    "id": "x-good-05",
+    "label": "good",
+    "author": "ml_explainer",
+    "text": "How flash attention actually works, in 8 tweets. 1/ Standard attention is O(n^2) memory because you materialize the full n×n matrix. Flash attention tiles the computation so you never hold the whole matrix at once...",
+    "metrics": { "likes": 1200, "retweets": 410, "replies": 55, "views": 88000 },
+    "createdAt": "2026-09-18T08:05:00Z"
+  },
+  {
+    "id": "x-good-06",
+    "label": "good",
+    "author": "speechai_labs",
+    "text": "Announcing Echo-Turbo: 8x faster transcription than our previous large model with less than 1% WER regression on LibriSpeech. Open weights on HF today.",
+    "metrics": { "likes": 720, "retweets": 260, "replies": 39, "views": 46000 },
+    "createdAt": "2026-09-17T16:50:00Z"
+  },
+  {
+    "id": "x-good-07",
+    "label": "good",
+    "author": "hobbyist_dev",
+    "text": "Built a small CLI that diffs two LLM outputs token-by-token and highlights hallucinated spans against a reference doc. MIT licensed, 200 lines: github.com/htin/tokdiff",
+    "metrics": { "likes": 95, "retweets": 22, "replies": 8, "views": 4100 },
+    "createdAt": "2026-09-16T13:30:00Z"
+  },
+  {
+    "id": "x-good-08",
+    "label": "good",
+    "author": "alignment_researcher",
+    "text": "Ablation result: removing RLHF and keeping only SFT dropped helpfulness scores 18 points but cut refusal-on-benign-prompts by 40%. Full numbers in section 4.2 of the writeup.",
+    "metrics": { "likes": 305, "retweets": 90, "replies": 27, "views": 17000 },
+    "createdAt": "2026-09-15T10:12:00Z"
+  },
+  {
+    "id": "x-good-09",
+    "label": "good",
+    "author": "forgecompute",
+    "text": "Forge 2.0 is live: background agents run in a sandboxed VM, a new merge-conflict resolver, and 30% faster indexing on repos over 1M lines.",
+    "metrics": { "likes": 980, "retweets": 330, "replies": 71, "views": 61000 },
+    "createdAt": "2026-09-14T19:44:00Z"
+  },
+  {
+    "id": "x-good-10",
+    "label": "good",
+    "author": "quant_ml",
+    "text": "Fine-tuned the same base model with LoRA rank 8 vs rank 32 on our support-ticket dataset. Rank 32 added 1.1 points of accuracy but tripled training time. Not worth it for us.",
+    "metrics": { "likes": 260, "retweets": 60, "replies": 33, "views": 14000 },
+    "createdAt": "2026-09-13T07:28:00Z"
+  },
+  {
+    "id": "x-bad-01",
+    "label": "bad",
+    "author": "hypebot_daily",
+    "text": "AI is going to change EVERYTHING. Nobody is ready for what's coming. Mind blown 🤯🤯🤯",
+    "metrics": { "likes": 4100, "retweets": 900, "replies": 310, "views": 210000 },
+    "createdAt": "2026-09-22T12:00:00Z"
+  },
+  {
+    "id": "x-bad-02",
+    "label": "bad",
+    "author": "giveaway_king",
+    "text": "RT + follow + tag 3 friends for a chance to win a free ChatGPT Plus subscription! Winner picked Friday 🎉",
+    "metrics": { "likes": 2900, "retweets": 1800, "replies": 640, "views": 190000 },
+    "createdAt": "2026-09-21T15:10:00Z"
+  },
+  {
+    "id": "x-bad-03",
+    "label": "bad",
+    "author": "rage_takes",
+    "text": "AI 'researchers' are just grifters larping as scientists. Change my mind. 🤡",
+    "metrics": { "likes": 1500, "retweets": 320, "replies": 980, "views": 95000 },
+    "createdAt": "2026-09-20T09:35:00Z"
+  },
+  {
+    "id": "x-bad-04",
+    "label": "bad",
+    "author": "vague_futurist",
+    "text": "In 5 years none of your jobs will exist. AI is coming for everyone. Save this tweet.",
+    "metrics": { "likes": 3200, "retweets": 1100, "replies": 250, "views": 150000 },
+    "createdAt": "2026-09-19T20:02:00Z"
+  },
+  {
+    "id": "x-bad-05",
+    "label": "bad",
+    "author": "engagement_farmer",
+    "text": "Comment 'AI' below and I'll send you my secret prompt that 10x's your productivity 👇",
+    "metrics": { "likes": 2100, "retweets": 400, "replies": 1400, "views": 130000 },
+    "createdAt": "2026-09-18T17:47:00Z"
+  },
+  {
+    "id": "x-bad-06",
+    "label": "bad",
+    "author": "rehash_news",
+    "text": "Reminder that ChatGPT can write code now. Wild that this technology exists.",
+    "metrics": { "likes": 340, "retweets": 40, "replies": 55, "views": 22000 },
+    "createdAt": "2026-09-17T06:18:00Z"
+  },
+  {
+    "id": "x-bad-07",
+    "label": "bad",
+    "author": "clickbait_ai",
+    "text": "You won't believe what this AI just did. Thread below 👇 (it's insane)",
+    "metrics": { "likes": 1800, "retweets": 500, "replies": 210, "views": 140000 },
+    "createdAt": "2026-09-16T21:55:00Z"
+  },
+  {
+    "id": "x-bad-08",
+    "label": "bad",
+    "author": "fomo_daily",
+    "text": "If you're not using AI in your business right now you're already behind. Like and follow for more.",
+    "metrics": { "likes": 900, "retweets": 210, "replies": 90, "views": 70000 },
+    "createdAt": "2026-09-15T14:33:00Z"
+  },
+  {
+    "id": "x-bad-09",
+    "label": "bad",
+    "author": "giveaway_king2",
+    "text": "Giving away 5 free spots in my AI mastermind. Just retweet and comment 'IN' to enter.",
+    "metrics": { "likes": 1600, "retweets": 950, "replies": 500, "views": 88000 },
+    "createdAt": "2026-09-14T10:20:00Z"
+  },
+  {
+    "id": "x-bad-10",
+    "label": "bad",
+    "author": "hot_takes_only",
+    "text": "AI is either the best thing ever or the worst thing ever. There is no in between. Thoughts?",
+    "metrics": { "likes": 610, "retweets": 80, "replies": 340, "views": 40000 },
+    "createdAt": "2026-09-13T08:15:00Z"
+  }
+]

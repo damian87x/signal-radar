@@ -1,0 +1,152 @@
+[
+  {
+    "id": "tt1",
+    "url": "https://tiktok.com/@glowqueen/video/1001",
+    "author": "@glowqueen",
+    "text": "This vitamin C serum cleared my skin in 2 weeks, shop it on my TikTok store, link in bio! 🧴✨",
+    "metrics": { "views": 500000, "likes": 40000, "comments": 1200 },
+    "createdAt": "2026-09-23T12:00:00.000Z",
+    "fetchedAt": "2026-09-24T12:00:00.000Z",
+    "label": "product"
+  },
+  {
+    "id": "tt2",
+    "url": "https://tiktok.com/@techdrops/video/1002",
+    "author": "@techdrops",
+    "text": "This mini projector turns any wall into a home theater, only $39.99 on my shop rn, grab yours before restock!",
+    "metrics": { "views": 320000, "likes": 21000, "comments": 800 },
+    "createdAt": "2026-09-22T09:00:00.000Z",
+    "fetchedAt": "2026-09-24T09:00:00.000Z",
+    "label": "product"
+  },
+  {
+    "id": "tt3",
+    "url": "https://tiktok.com/@tidyhome/video/1003",
+    "author": "@tidyhome",
+    "text": "Found the best silicone stretch lids for my fridge, no more plastic wrap! Linked in bio, use code SAVE10",
+    "metrics": { "views": 90000, "likes": 6000, "comments": 300 },
+    "createdAt": "2026-09-23T18:00:00.000Z",
+    "fetchedAt": "2026-09-24T18:00:00.000Z",
+    "label": "product"
+  },
+  {
+    "id": "tt4",
+    "url": "https://tiktok.com/@fitcloset/video/1004",
+    "author": "@fitcloset",
+    "text": "These oversized blazers just dropped in my shop, sizes S-XL, selling fast so tap the cart icon!",
+    "metrics": { "views": 150000, "likes": 11000, "comments": 500 },
+    "createdAt": "2026-09-24T06:00:00.000Z",
+    "fetchedAt": "2026-09-24T12:00:00.000Z",
+    "label": "product"
+  },
+  {
+    "id": "tt5",
+    "url": "https://tiktok.com/@homegym/video/1005",
+    "author": "@homegym",
+    "text": "This resistance band set changed my home workouts, 5 bands for $24.99, shop link in my profile",
+    "metrics": { "views": 60000, "likes": 4200, "comments": 210 },
+    "createdAt": "2026-09-21T12:00:00.000Z",
+    "fetchedAt": "2026-09-24T12:00:00.000Z",
+    "label": "product"
+  },
+  {
+    "id": "tt6",
+    "url": "https://tiktok.com/@snackqueen/video/1006",
+    "author": "@snackqueen",
+    "text": "Try this protein cookie dough, tastes like cheat day but it's actually healthy, restocking Friday on my shop",
+    "metrics": { "views": 210000, "likes": 15000, "comments": 640 },
+    "createdAt": "2026-09-23T15:00:00.000Z",
+    "fetchedAt": "2026-09-24T15:00:00.000Z",
+    "label": "product"
+  },
+  {
+    "id": "tt7",
+    "url": "https://tiktok.com/@plannerpro/video/1007",
+    "author": "@plannerpro",
+    "text": "I made a Notion template for content planning, link in bio, $12 for lifetime access",
+    "metrics": { "views": 45000, "likes": 3100, "comments": 180 },
+    "createdAt": "2026-09-22T12:00:00.000Z",
+    "fetchedAt": "2026-09-24T12:00:00.000Z",
+    "label": "product"
+  },
+  {
+    "id": "tt8",
+    "url": "https://tiktok.com/@techdrops/video/1008",
+    "author": "@techdrops",
+    "text": "This portable blender charges via USB and blends a smoothie in 30 seconds, shop now before it sells out again",
+    "metrics": { "views": 400000, "likes": 30000, "comments": 950 },
+    "createdAt": "2026-09-23T09:00:00.000Z",
+    "fetchedAt": "2026-09-24T09:00:00.000Z",
+    "label": "product"
+  },
+  {
+    "id": "tt9",
+    "url": "https://tiktok.com/@glowqueen/video/1009",
+    "author": "@glowqueen",
+    "text": "Found a dupe for the $60 foundation for only $9, tap the yellow basket to shop it",
+    "metrics": { "views": 180000, "likes": 14000, "comments": 470 },
+    "createdAt": "2026-09-24T02:00:00.000Z",
+    "fetchedAt": "2026-09-24T12:00:00.000Z",
+    "label": "product"
+  },
+  {
+    "id": "tt10",
+    "url": "https://tiktok.com/@tidyhome/video/1010",
+    "author": "@tidyhome",
+    "text": "This LED strip light setup transformed my room, full kit linked below, shop the exact one I used",
+    "metrics": { "views": 75000, "likes": 5100, "comments": 260 },
+    "createdAt": "2026-09-23T20:00:00.000Z",
+    "fetchedAt": "2026-09-24T20:00:00.000Z",
+    "label": "product"
+  },
+  {
+    "id": "tt11",
+    "url": "https://tiktok.com/@nightowl/video/1011",
+    "author": "@nightowl",
+    "text": "POV: it's 3am and you can't sleep so you're rewatching your favorite show again lol",
+    "metrics": { "views": 30000, "likes": 2500, "comments": 90 },
+    "createdAt": "2026-09-23T03:00:00.000Z",
+    "fetchedAt": "2026-09-24T03:00:00.000Z",
+    "label": "not"
+  },
+  {
+    "id": "tt12",
+    "url": "https://tiktok.com/@storytime/video/1012",
+    "author": "@storytime",
+    "text": "Storytime about the most awkward first date I've ever been on, part 2 tomorrow",
+    "metrics": { "views": 50000, "likes": 4000, "comments": 320 },
+    "createdAt": "2026-09-22T20:00:00.000Z",
+    "fetchedAt": "2026-09-24T20:00:00.000Z",
+    "label": "not"
+  },
+  {
+    "id": "tt13",
+    "url": "https://tiktok.com/@dancer/video/1013",
+    "author": "@dancer",
+    "text": "Just vibing to this song on my way to work, anyone else obsessed with this sound?",
+    "metrics": { "views": 20000, "likes": 1800, "comments": 60 },
+    "createdAt": "2026-09-24T07:00:00.000Z",
+    "fetchedAt": "2026-09-24T12:00:00.000Z",
+    "label": "not"
+  },
+  {
+    "id": "tt14",
+    "url": "https://tiktok.com/@dogmom/video/1014",
+    "author": "@dogmom",
+    "text": "My dog refused to get off the couch this morning, absolute diva behavior",
+    "metrics": { "views": 15000, "likes": 1400, "comments": 45 },
+    "createdAt": "2026-09-23T10:00:00.000Z",
+    "fetchedAt": "2026-09-24T10:00:00.000Z",
+    "label": "not"
+  },
+  {
+    "id": "tt15",
+    "url": "https://tiktok.com/@motivate/video/1015",
+    "author": "@motivate",
+    "text": "Motivational monday: remember progress isn't always visible, keep going",
+    "metrics": { "views": 40000, "likes": 3600, "comments": 150 },
+    "createdAt": "2026-09-22T06:00:00.000Z",
+    "fetchedAt": "2026-09-24T06:00:00.000Z",
+    "label": "not"
+  }
+]

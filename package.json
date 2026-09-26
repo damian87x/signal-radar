@@ -1,0 +1,78 @@
+{
+  "name": "signal-radar",
+  "version": "0.1.0",
+  "description": "Read-only radar for X, TikTok, creators and email: TypeSafe Jev scores every item in ~0.5s, headless Grok explains only the top few, you get a digest. CLI, pi package and Claude Code plugin.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Damian Borek",
+  "homepage": "https://github.com/damian87x/signal-radar#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/damian87x/signal-radar.git"
+  },
+  "bugs": {
+    "url": "https://github.com/damian87x/signal-radar/issues"
+  },
+  "keywords": [
+    "pi-package",
+    "claude-code-plugin",
+    "jev",
+    "typesafe",
+    "grok",
+    "twitter",
+    "tiktok",
+    "influencers",
+    "email-triage"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "bin": {
+    "signal-radar": "bin/signal-radar.mjs"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "extensions/",
+    "skills/",
+    "commands/",
+    ".claude-plugin/",
+    "README.md",
+    "LICENSE"
+  ],
+  "pi": {
+    "extensions": [
+      "./extensions/signal-radar.ts"
+    ],
+    "skills": [
+      "./skills"
+    ]
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "start": "tsx src/cli.ts"
+  },
+  "dependencies": {
+    "tsx": "^4.19.0"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "typebox": "*"
+  },
+  "peerDependenciesMeta": {
+    "@earendil-works/pi-coding-agent": {
+      "optional": true
+    },
+    "typebox": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "^0.87.1",
+    "@types/node": "^24.0.0",
+    "typebox": "^1.3.34",
+    "typescript": "^5.6.0",
+    "vitest": "^3.2.0"
+  }
+}

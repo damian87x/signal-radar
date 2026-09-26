@@ -1,0 +1,94 @@
+{
+  "ok": true,
+  "schema_version": "1",
+  "data": [
+    {
+      "id": "1975551234567891201",
+      "text": "Shipped a new AI agent that reads your calendar and drafts the follow-up emails before you even ask. Not hype, just saved me 40 minutes today.",
+      "author": {
+        "id": "889012345",
+        "name": "Dana Okoye",
+        "screenName": "danabuilds",
+        "profileImageUrl": "https://pbs.twimg.com/profile_images/1975500000000000000/abc123_normal.jpg",
+        "verified": false
+      },
+      "metrics": {
+        "likes": 412,
+        "retweets": 58,
+        "replies": 31,
+        "quotes": 9,
+        "views": 28430,
+        "bookmarks": 120
+      },
+      "createdAt": "Wed Sep 24 09:12:03 +0000 2026",
+      "createdAtLocal": "2026-09-24 09:12",
+      "createdAtISO": "2026-09-24T09:12:03+00:00",
+      "media": [],
+      "urls": [],
+      "isRetweet": false,
+      "retweetedBy": null,
+      "lang": "en",
+      "score": null
+    },
+    {
+      "id": "1975551234567891202",
+      "text": "LFG!!! AI is about to change EVERYTHING, retweet if you agree, link in bio to my newsletter",
+      "author": {
+        "id": "889012346",
+        "name": "Growth Guy",
+        "screenName": "growthguyai",
+        "profileImageUrl": "https://pbs.twimg.com/profile_images/1975500000000000001/def456_normal.jpg",
+        "verified": true
+      },
+      "metrics": {
+        "likes": 5310,
+        "retweets": 890,
+        "replies": 640,
+        "quotes": 44,
+        "views": 512000,
+        "bookmarks": 90
+      },
+      "createdAt": "Wed Sep 24 08:47:21 +0000 2026",
+      "createdAtLocal": "2026-09-24 08:47",
+      "createdAtISO": "2026-09-24T08:47:21+00:00",
+      "media": [],
+      "urls": [
+        "https://t.co/exampleLink1"
+      ],
+      "isRetweet": false,
+      "retweetedBy": null,
+      "lang": "en",
+      "score": null
+    },
+    {
+      "id": "1975551234567891203",
+      "text": "New paper: a small open-weight model matches GPT-4-class agents on tool-use benchmarks when fine-tuned on trajectory data. Code + weights linked below.",
+      "author": {
+        "id": "889012347",
+        "name": "Priya Raman",
+        "screenName": "priya_ml",
+        "profileImageUrl": "https://pbs.twimg.com/profile_images/1975500000000000002/ghi789_normal.jpg",
+        "verified": false
+      },
+      "metrics": {
+        "likes": 1180,
+        "retweets": 312,
+        "replies": 87,
+        "quotes": 21,
+        "views": 94210,
+        "bookmarks": 640
+      },
+      "createdAt": "Wed Sep 24 07:03:55 +0000 2026",
+      "createdAtLocal": "2026-09-24 07:03",
+      "createdAtISO": "2026-09-24T07:03:55+00:00",
+      "media": [],
+      "urls": [
+        "https://t.co/exampleLink2"
+      ],
+      "isRetweet": false,
+      "retweetedBy": null,
+      "lang": "en",
+      "score": null
+    }
+  ]
+}
