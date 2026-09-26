@@ -11,12 +11,12 @@ export interface ExecResult {
 export type Runner = (
   cmd: string,
   args: string[],
-  opts?: { stdin?: string; timeoutMs?: number },
+  opts?: { stdin?: string; timeoutMs?: number; cwd?: string },
 ) => Promise<ExecResult>;
 
 export const run: Runner = (cmd, args, opts = {}) =>
   new Promise((resolve) => {
-    const child = spawn(cmd, args, { stdio: ["pipe", "pipe", "pipe"] });
+    const child = spawn(cmd, args, { stdio: ["pipe", "pipe", "pipe"], cwd: opts.cwd });
     let stdout = "";
     let stderr = "";
     let timedOut = false;

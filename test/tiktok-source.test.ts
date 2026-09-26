@@ -39,7 +39,7 @@ describe("fetchTikTok", () => {
       calls.push({ args });
       expect(cmd).toBe("opencli");
       if (args[0] === "auth") return ok(JSON.stringify([{ site: "tiktok", logged_in: true }]));
-      if (args.includes("open")) return ok("");
+      if (args.includes("open") || args.includes("wait")) return ok("");
       if (args.includes("eval")) return ok(JSON.stringify(fixture));
       throw new Error(`unexpected opencli call: ${args.join(" ")}`);
     };
@@ -80,7 +80,7 @@ describe("fetchTikTok", () => {
       }
       expect(call.args[0]).toBe("browser");
       const verb = call.args[2];
-      expect(["open", "eval"]).toContain(verb);
+      expect(["open", "wait", "eval"]).toContain(verb);
     }
 
     const openCall = calls.find((c) => c.args[2] === "open");
@@ -89,7 +89,7 @@ describe("fetchTikTok", () => {
 
   it("caps returned items at maxPerQuery", async () => {
     const runner: Runner = async (_cmd, args) => {
-      if (args.includes("open")) return ok("");
+      if (args.includes("open") || args.includes("wait")) return ok("");
       return ok(JSON.stringify(fixture));
     };
 
@@ -145,5 +145,41 @@ describe("fetchTikTok login + empty results", () => {
     });
     expect(result.ok).toBe(true);
     expect(skipped).toEqual(["nothing here: tiktok_no_results"]);
+  });
+});
+
+describe("fetchTikTok on a real search-page capture", () => {
+  it("maps cards extracted from tiktok.com/search (2026-09-26) including views and author", async () => {
+    const live = JSON.parse(readFileSync(join(__dirname, "fixtures/tiktok-search-live.json"), "utf8")) as Array<{
+      id: string;
+      author: string;
+      views: string;
+    }>;
+    const runner: Runner = async (_cmd, args) => {
+      if (args[0] === "auth") return ok(JSON.stringify([{ site: "tiktok", logged_in: true }]));
+      if (args.includes("eval")) return ok(JSON.stringify(live));
+      return ok("");
+    };
+    const result = await fetchTikTok({ queries: ["ai gadget"], maxPerQuery: 10, runner });
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("expected ok");
+    expect(result.value.map((i) => i.id)).toEqual(live.map((c) => c.id));
+    expect(result.value[0].author).toBe(live[0].author);
+    expect(result.value[0].metrics.views).toBe(parseCount(live[0].views));
+    expect(result.value.every((i) => i.text.length > 0)).toBe(true);
+  });
+});
+
+describe("createdAtFromId", () => {
+  it("decodes the Unix seconds in a TikTok video id's upper 32 bits", async () => {
+    const { createdAtFromId } = await import("../src/sources/tiktok.ts");
+    expect(createdAtFromId("7640782947435564310", "2026-09-26T00:00:00.000Z")).toBe("2026-05-17T09:00:11.000Z");
+  });
+
+  it("rejects ids that don't decode to a plausible date", async () => {
+    const { createdAtFromId } = await import("../src/sources/tiktok.ts");
+    expect(createdAtFromId("123", "2026-09-26T00:00:00.000Z")).toBeUndefined();
+    expect(createdAtFromId("abc", "2026-09-26T00:00:00.000Z")).toBeUndefined();
+    expect(createdAtFromId("9999999999999999999", "2026-09-26T00:00:00.000Z")).toBeUndefined();
   });
 });

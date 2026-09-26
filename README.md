@@ -83,10 +83,13 @@ failing with an auth error.
 
 ### TikTok — opencli + logged-in Chrome
 
-The TikTok lane reads search/hashtag pages through `opencli`'s bridge to a
-Chrome profile that is already logged into TikTok. No separate credential
-step in this repo — make sure `opencli` is running and the Chrome profile is
-signed in before running the `tiktok` lane.
+The TikTok lane reads `tiktok.com/search` result pages through `opencli`'s
+bridge to a Chrome profile that is already logged into TikTok (hashtags such as
+`#tiktokmademebuyit` are searched too; `/tag/` pages rendered no videos when
+tested). No separate credential step in this repo — make sure `opencli` is
+running and the Chrome profile is signed in before running the `tiktok` lane.
+Search cards show views but no date, so a video's age (for momentum) is decoded
+from its id, whose upper 32 bits are the Unix posting time.
 
 ### Mail — JSON export
 
@@ -189,8 +192,10 @@ which the agent turns into a `schedule_prompt` tool call along the lines of
   delete calls anywhere in `src/`. `test/readonly.test.ts` statically scans
   every source file for write-side CLI subcommands/flags and HTTP
   POST/PUT/DELETE calls and fails the suite if any appear.
-- `grok` runs headless with `--tools ''`, `--disable-web-search`, and
-  `--permission-mode plan` — no tool use, no web access, no write actions.
+- `grok` runs headless with `--tools ''` and `--disable-web-search`, from the
+  temp directory (so no project skills load) — no tool use, no web access, no
+  write actions. Answers that are empty or `"placeholder"` are rejected, so an
+  item whose caption names no product simply gets no enrichment.
 - All scraped/emailed text is wrapped in a delimited data block and the prompt
   tells jev/grok to treat it as untrusted data. For grok the delimiter is
   nonce-tagged and neutralised; the mail rubric escapes `<`/`>`. Known gap:

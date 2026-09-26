@@ -1,6 +1,6 @@
 {
   "name": "signal-radar",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Read-only radar for X, TikTok, creators and email: TypeSafe Jev scores every item in ~0.5s, headless Grok explains only the top few, you get a digest. CLI, pi package and Claude Code plugin.",
   "type": "module",
   "license": "MIT",

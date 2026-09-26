@@ -43,21 +43,32 @@ interface RawCard {
   shares?: unknown;
 }
 
-/** JS run in-page via `opencli browser <session> eval`. Read-only: no click/follow/like/comment. */
-const EXTRACT_JS = `Array.from(document.querySelectorAll('[data-e2e="search_video-item"], [data-e2e="challenge-item"]')).map((el) => {
+/** Video card containers. `search_top-item` is what tiktok.com/search renders (checked live 2026-09-26). */
+const CARD_SELECTOR = '[data-e2e="search_top-item"], [data-e2e="search_video-item"], [data-e2e="challenge-item"]';
+
+/**
+ * JS run in-page via `opencli browser <session> eval`. Read-only: no click/follow/like/comment.
+ * On search pages the card holds the link + view count and a sibling block holds caption and
+ * author, so text fields are looked up in the nearest ancestor that contains a caption.
+ * Search cards show views only; likes/comments/shares stay empty there.
+ */
+const EXTRACT_JS = `Array.from(document.querySelectorAll('${CARD_SELECTOR}')).map((el) => {
   const link = el.querySelector('a[href*="/video/"]');
   const href = link ? link.href : "";
+  let box = el;
+  for (let i = 0; i < 4 && box.parentElement && !box.querySelector('[data-e2e="search-card-video-caption"], [data-e2e="video-desc"]'); i++) box = box.parentElement;
+  const text = (sel) => ((el.querySelector(sel) || box.querySelector(sel))?.textContent ?? "").trim();
   const idMatch = href.match(/\\/video\\/(\\d+)/);
   const authorMatch = href.match(/\\/@([^/]+)\\//);
   return {
     id: idMatch ? idMatch[1] : "",
     url: href,
-    author: authorMatch ? authorMatch[1] : "",
-    caption: el.querySelector('[data-e2e="search-card-video-caption"], [data-e2e="video-desc"]')?.textContent ?? "",
-    views: el.querySelector('[data-e2e="video-views-count"], strong[data-e2e$="views-count"]')?.textContent ?? "",
-    likes: el.querySelector('[data-e2e="video-like-count"], strong[data-e2e$="like-count"]')?.textContent ?? "",
-    comments: el.querySelector('[data-e2e="video-comment-count"], strong[data-e2e$="comment-count"]')?.textContent ?? "",
-    shares: el.querySelector('[data-e2e="video-share-count"], strong[data-e2e$="share-count"]')?.textContent ?? "",
+    author: authorMatch ? authorMatch[1] : text('[data-e2e="search-card-user-unique-id"]'),
+    caption: text('[data-e2e="search-card-video-caption"], [data-e2e="video-desc"]'),
+    views: text('[data-e2e="video-views"], [data-e2e="video-views-count"], strong[data-e2e$="views-count"]'),
+    likes: text('[data-e2e="video-like-count"], strong[data-e2e$="like-count"]'),
+    comments: text('[data-e2e="video-comment-count"], strong[data-e2e$="comment-count"]'),
+    shares: text('[data-e2e="video-share-count"], strong[data-e2e$="share-count"]'),
   };
 }).filter((card) => card.id);`;
 
@@ -76,11 +87,9 @@ export function parseCount(raw: string): number {
 }
 
 function urlForQuery(query: string): string {
-  const trimmed = query.trim();
-  if (trimmed.startsWith("#")) {
-    return `https://www.tiktok.com/tag/${encodeURIComponent(trimmed.slice(1))}`;
-  }
-  return `https://www.tiktok.com/search?q=${encodeURIComponent(trimmed)}`;
+  // Hashtags go through search too: /tag/<name> pages rendered no videos for a logged-in
+  // session (2026-09-26), while search?q=%23<name> rendered 14 cards.
+  return `https://www.tiktok.com/search?q=${encodeURIComponent(query.trim())}`;
 }
 
 function parseCards(stdout: string): RawCard[] {
@@ -99,10 +108,24 @@ function asString(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
+/**
+ * TikTok video ids carry their creation time: the upper 32 bits are Unix seconds. Search cards
+ * show no date, so this is the only age signal for momentum. Returns undefined for anything
+ * that doesn't decode to a plausible date (2016 .. fetch time + 1 day).
+ */
+export function createdAtFromId(id: string, fetchedAt: string): string | undefined {
+  if (!/^\d{15,20}$/.test(id)) return undefined;
+  const ms = Number(BigInt(id) >> 32n) * 1000;
+  const latest = Date.parse(fetchedAt) + 86_400_000;
+  if (ms < Date.parse("2016-01-01T00:00:00Z") || !(ms <= latest)) return undefined;
+  return new Date(ms).toISOString();
+}
+
 function toItem(card: RawCard, fetchedAt: string): Item | null {
   const id = asString(card.id);
   if (!id) return null;
   return {
+    createdAt: createdAtFromId(id, fetchedAt),
     lane: "tiktok",
     id,
     url: asString(card.url) || `https://www.tiktok.com/video/${id}`,
@@ -142,6 +165,10 @@ export async function fetchTikTok(options: FetchTikTokOptions): Promise<Result<I
         error: `opencli browser open failed for "${query}": ${openResult.stderr || openResult.stdout}`,
       };
     }
+
+    // Cards render after page load. A timeout here is fine: extraction then finds no cards and
+    // the query is reported as tiktok_no_results.
+    await runner("opencli", ["browser", SESSION, "wait", "selector", CARD_SELECTOR, "--timeout", "15000"]);
 
     const evalResult = await runner("opencli", ["browser", SESSION, "eval", EXTRACT_JS]);
     if (evalResult.code !== 0) {

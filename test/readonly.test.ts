@@ -388,10 +388,9 @@ describe("readonly guard: real source tree", () => {
     expect(violations, JSON.stringify(violations, null, 2)).toEqual([]);
   });
 
-  it("grok.ts runs headless: no tools, no web search, plan-only permission mode", () => {
+  it("grok.ts runs headless: no tools (--tools \"\"), no web search", () => {
     const grokSrc = readFileSync(path.join(SRC_DIR, "grok.ts"), "utf-8");
-    expect(grokSrc).toContain('"--tools"');
+    expect(grokSrc).toMatch(/"--tools"\s*,\s*""/);
     expect(grokSrc).toContain('"--disable-web-search"');
-    expect(grokSrc).toMatch(/"--permission-mode"\s*,\s*"plan"/);
   });
 });

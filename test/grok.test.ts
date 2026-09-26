@@ -136,7 +136,7 @@ describe("grok.enrich", () => {
     expect(calls[0].opts?.timeoutMs).toBe(5000);
   });
 
-  it("always includes the safety flags (--tools \"\", --disable-web-search, --permission-mode plan) and never --always-approve", async () => {
+  it("always includes the safety flags (--tools \"\", --disable-web-search) and never a permissive mode", async () => {
     const { runner, calls } = makeRunner([
       { code: 0, stdout: JSON.stringify({ summary: "ok", tags: [] }), stderr: "", timedOut: false },
     ]);
@@ -148,10 +148,10 @@ describe("grok.enrich", () => {
     expect(toolsIdx).toBeGreaterThan(-1);
     expect(args[toolsIdx + 1]).toBe("");
     expect(args).toContain("--disable-web-search");
-    const permIdx = args.indexOf("--permission-mode");
-    expect(permIdx).toBeGreaterThan(-1);
-    expect(args[permIdx + 1]).toBe("plan");
     expect(args).not.toContain("--always-approve");
+    for (const permissive of ["bypassPermissions", "acceptEdits", "auto", "dontAsk"]) {
+      expect(args).not.toContain(permissive);
+    }
   });
 
   it("neutralises a fake closing delimiter embedded in item.text so it cannot end the DATA block early", async () => {
@@ -226,4 +226,29 @@ describe("grok.enrich", () => {
     },
     70000,
   );
+});
+
+describe("grok 1.0.41 envelope quirks (captured live 2026-09-26)", () => {
+  it("takes the real object when text holds an empty placeholder then the answer back to back", async () => {
+    const text = '{"summary":"","tags":[]}{"summary":"Steam iron promo","tags":["home"]}';
+    const { runner, calls } = makeRunner([
+      {
+        code: 0,
+        stdout: JSON.stringify({ text, stopReason: "end_turn", structuredOutput: null, structuredOutputError: "x" }),
+        stderr: "",
+        timedOut: false,
+      },
+    ]);
+    const res = await enrich(item, rubric, { runner });
+    expect(res).toEqual({ ok: true, value: { summary: "Steam iron promo", tags: ["home"] } });
+    expect(calls.length).toBe(1);
+  });
+
+  it("rejects empty required strings (retries, then gives up)", async () => {
+    const empty = { code: 0, stdout: JSON.stringify({ text: '{"summary":"","tags":[]}' }), stderr: "", timedOut: false };
+    const { runner, calls } = makeRunner([empty, empty]);
+    const res = await enrich(item, rubric, { runner });
+    expect(res.ok).toBe(false);
+    expect(calls.length).toBe(2);
+  });
 });

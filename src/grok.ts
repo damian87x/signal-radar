@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { tmpdir } from "node:os";
 import { run } from "./exec.ts";
 import type { Runner } from "./exec.ts";
 import type { Item, Result, Rubric } from "./types.ts";
@@ -67,8 +68,42 @@ function validateAgainstSchema(value: unknown, schema: object): value is Record<
     if (!(key in value)) return false;
     const propSchema = s.properties?.[key];
     if (propSchema && !typeMatches(value[key], propSchema.type)) return false;
+    // An empty required string is a placeholder, not an answer (grok 1.0.41 sometimes emits
+    // {"product_name":"",...} before the real object).
+    if (typeof value[key] === "string") {
+      const v = (value[key] as string).trim().toLowerCase();
+      // "placeholder" is what grok fills in when it failed to produce structured output.
+      if (v === "" || v === "placeholder") return false;
+    }
   }
   return true;
+}
+
+/** Splits text holding several top-level JSON objects back to back ("{...}{...}"). */
+function splitJsonObjects(text: string): string[] {
+  const out: string[] = [];
+  let depth = 0;
+  let start = -1;
+  let inString = false;
+  let escaped = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (c === "\\") escaped = true;
+      else if (c === '"') inString = false;
+      continue;
+    }
+    if (c === '"') inString = true;
+    else if (c === "{") {
+      if (depth === 0) start = i;
+      depth++;
+    } else if (c === "}" && depth > 0) {
+      depth--;
+      if (depth === 0 && start >= 0) out.push(text.slice(start, i + 1));
+    }
+  }
+  return out;
 }
 
 /** Walks a parsed value (and any JSON-encoded strings within it) collecting object candidates. */
@@ -85,7 +120,14 @@ function collectCandidates(value: unknown, depth: number, out: unknown[]): void 
       try {
         collectCandidates(JSON.parse(trimmed), depth + 1, out);
       } catch {
-        // not embedded JSON, ignore
+        // Not one JSON value; grok sometimes concatenates objects ("{...}{...}").
+        for (const part of splitJsonObjects(trimmed)) {
+          try {
+            collectCandidates(JSON.parse(part), depth + 1, out);
+          } catch {
+            // not embedded JSON, ignore
+          }
+        }
       }
     }
   }
@@ -134,17 +176,19 @@ export async function enrich(
     schemaJson,
     "--output-format",
     "json",
+    // No tools and no web: grok can only answer. (--permission-mode plan was dropped in 0.2.1:
+    // with tools already off it added no safety and halved structured-output success live.)
     "--tools",
     "",
     "--disable-web-search",
-    "--permission-mode",
-    "plan",
   ];
   if (opts.model) args.push("-m", opts.model);
 
   const maxAttempts = 2; // initial call + at most one retry on invalid output
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    const result = await runner("grok", args, { timeoutMs });
+    // Run from the temp dir: grok -p loads skills/context from its working directory, which
+    // costs tokens and can steer the answer.
+    const result = await runner("grok", args, { timeoutMs, cwd: tmpdir() });
 
     if (result.timedOut) {
       return { ok: false, error: "grok call timed out" };

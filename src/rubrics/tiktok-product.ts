@@ -87,7 +87,10 @@ export const tiktokProductRubric: Rubric = {
   ],
   state,
   rank,
-  threshold: 0.4,
+  // Real search results (2026-09-26): clear product videos with 10k-45k views over a few months
+  // rank ~0.05-0.15, because captions rarely show buy intent. --top already caps Grok cost,
+  // so the threshold only filters junk.
+  threshold: 0.1,
   enrichSchema: {
     type: "object",
     properties: {
