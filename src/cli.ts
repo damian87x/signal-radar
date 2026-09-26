@@ -192,6 +192,7 @@ export async function main(argv: string[], deps: CliDeps = {}): Promise<number> 
 
     if (!result.ok) {
       console.error(result.error);
+      if (result.error === "x_rate_limited") console.error("X is rate-limiting this account; wait ~15 minutes.");
       return 1;
     }
 
@@ -201,6 +202,7 @@ export async function main(argv: string[], deps: CliDeps = {}): Promise<number> 
       const c = result.value;
       const date = now().toISOString().slice(0, 10);
       console.log(`✓ ${c.fetched} fetched · ${c.inserted} new · ${c.enriched} enriched · ${c.delivered} delivered`);
+      for (const s of c.skipped) console.log(`! skipped ${s}`);
       console.log(`→ ${join(parsed.out, `${date}.html`)}`);
     }
     return 0;

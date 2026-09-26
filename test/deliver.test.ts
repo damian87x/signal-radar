@@ -29,6 +29,9 @@ function makeFakeStore(seed: Scored[]): Store {
         if (existing) rows.set(key, { ...existing, deliveredAt: at });
       }
     },
+    since() {
+      return [];
+    },
     close() {},
   };
 }
@@ -116,5 +119,15 @@ describe("deliver", () => {
 
     expect(render).toHaveBeenCalledTimes(1);
     expect(send).toHaveBeenCalledWith("CUSTOM:1");
+  });
+});
+
+describe("deliver scoped to ids", () => {
+  it("only delivers items whose id is in `ids`, even when higher-ranked backlog exists", async () => {
+    const store = makeFakeStore([scored("backlog", "old post", 0.99), scored("fresh", "new post", 0.5)]);
+    const send = vi.fn(async () => {});
+    const n = await deliver(store, "x", { limit: 5, send, now: "t", ids: new Set(["fresh"]) });
+    expect(n).toBe(1);
+    expect(store.undelivered("x", 10).map((s) => s.item.id)).toEqual(["backlog"]);
   });
 });

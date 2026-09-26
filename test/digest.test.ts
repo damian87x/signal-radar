@@ -129,3 +129,16 @@ describe("writeDigest", () => {
     expect(md.length).toBeGreaterThan(0);
   });
 });
+
+describe("enrichment extras", () => {
+  it("renders every string enrich field (e.g. creators' outreach_angle), escaped, in html and markdown", () => {
+    const s = scored({ enrich: { outreach_angle: "Pitch <b>co-launch</b>", fit_reason: "AI tools niche", tags: ["x"] } });
+    const html = renderHtml("2026-09-26", [{ lane: "creators", items: [s] }]);
+    expect(html).toContain("Outreach angle:");
+    expect(html).toContain("Pitch &lt;b&gt;co-launch&lt;/b&gt;");
+    expect(html).not.toContain("<b>co-launch</b>");
+    const md = renderMarkdown("2026-09-26", [{ lane: "creators", items: [s] }]);
+    expect(md).toContain("Outreach angle: Pitch <b>co-launch</b>");
+    expect(md).toContain("Fit reason: AI tools niche");
+  });
+});

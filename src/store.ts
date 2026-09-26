@@ -83,6 +83,12 @@ export function createStore(path: string): Store {
     `SELECT * FROM items WHERE lane = ? AND rank IS NULL ORDER BY rowid ASC LIMIT ?`,
   );
 
+  const sinceStmt = db.prepare(
+    `SELECT * FROM items
+     WHERE lane = ? AND rank IS NOT NULL AND (fetched_at >= ? OR delivered_at >= ?)
+     ORDER BY rank DESC LIMIT ?`,
+  );
+
   return {
     upsert(items) {
       let inserted = 0;
@@ -126,6 +132,13 @@ export function createStore(path: string): Store {
       db
         .prepare(`UPDATE items SET delivered_at = ? WHERE lane = ? AND id IN (${placeholders})`)
         .run(at, lane, ...ids);
+    },
+
+    since(since, limitPerLane) {
+      const lanes: Lane[] = ["x", "tiktok", "creators", "mail"];
+      return lanes.flatMap((lane) =>
+        (sinceStmt.all(lane, since, since, limitPerLane) as unknown as Row[]).map(rowToScored),
+      );
     },
 
     close() {

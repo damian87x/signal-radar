@@ -188,7 +188,7 @@ describe("fetchX", () => {
       stdout: JSON.stringify({
         ok: false,
         schema_version: "1",
-        error: { code: "rate_limited", message: "Too many requests." },
+        error: { code: "server_error", message: "Internal error." },
       }),
       stderr: "",
       timedOut: false,
@@ -196,7 +196,73 @@ describe("fetchX", () => {
 
     const result = await fetchX({ queries: ["ai agents"], max: 10, runner });
 
-    expect(result).toEqual({ ok: false, error: "x_search_failed: rate_limited" });
+    expect(result).toEqual({ ok: false, error: "x_search_failed: server_error" });
+  });
+
+  it("maps rate_limited to x_rate_limited", async () => {
+    const runner: Runner = async () => ({
+      code: 1,
+      stdout: JSON.stringify({ ok: false, schema_version: "1", error: { code: "rate_limited", message: "Too many requests." } }),
+      stderr: "",
+      timedOut: false,
+    });
+
+    expect(await fetchX({ queries: ["@a"], max: 10, runner })).toEqual({ ok: false, error: "x_rate_limited" });
+  });
+
+  it("skips a bad @handle and keeps the others (best effort)", async () => {
+    const skipped: string[] = [];
+    const runner: Runner = async (_cmd, args) =>
+      args[1] === "bad_handle"
+        ? {
+            code: 1,
+            stdout: JSON.stringify({ ok: false, schema_version: "1", error: { code: "not_found", message: "HTTP 404" } }),
+            stderr: "",
+            timedOut: false,
+          }
+        : { code: 0, stdout: JSON.stringify(fixture), stderr: "", timedOut: false };
+
+    const result = await fetchX({
+      queries: ["@good", "@bad_handle"],
+      max: 10,
+      runner,
+      onSkip: (q, e) => skipped.push(`${q}: ${e}`),
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("expected ok");
+    expect(result.value.length).toBe(tweets.length);
+    expect(skipped).toEqual(["@bad_handle: x_search_failed: not_found"]);
+  });
+
+  it("an auth error still aborts the whole run", async () => {
+    const runner: Runner = async () => ({
+      code: 1,
+      stdout: JSON.stringify({ ok: false, schema_version: "1", error: { code: "not_authenticated", message: "x" } }),
+      stderr: "",
+      timedOut: false,
+    });
+    expect(await fetchX({ queries: ["@a", "@b"], max: 10, runner })).toEqual({ ok: false, error: "x_auth" });
+  });
+
+  it("routes only search through searchVia (the x.com/home shim)", async () => {
+    const calls: Array<{ cmd: string; args: string[] }> = [];
+    const runner: Runner = async (cmd, args) => {
+      calls.push({ cmd, args });
+      return { code: 0, stdout: JSON.stringify(fixture), stderr: "", timedOut: false };
+    };
+
+    await fetchX({
+      queries: ["ai agents", "@someone"],
+      max: 5,
+      runner,
+      searchVia: { cmd: "/py", prefix: ["/shim.py"] },
+    });
+
+    expect(calls).toEqual([
+      { cmd: "/py", args: ["/shim.py", "search", "ai agents", "-t", "latest", "-n", "5", "--json"] },
+      { cmd: "twitter", args: ["user-posts", "someone", "-n", "5", "--json"] },
+    ]);
   });
 
   it("falls back to a narrow stderr match when stdout isn't a parseable envelope", async () => {

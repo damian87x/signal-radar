@@ -38,6 +38,7 @@ describe("fetchTikTok", () => {
     const runner: Runner = async (cmd, args) => {
       calls.push({ args });
       expect(cmd).toBe("opencli");
+      if (args[0] === "auth") return ok(JSON.stringify([{ site: "tiktok", logged_in: true }]));
       if (args.includes("open")) return ok("");
       if (args.includes("eval")) return ok(JSON.stringify(fixture));
       throw new Error(`unexpected opencli call: ${args.join(" ")}`);
@@ -70,8 +71,13 @@ describe("fetchTikTok", () => {
     expect(first.metrics.comments).toBe(2341);
     expect(first.metrics.shares).toBe(5_600);
 
-    // Every opencli call must be browser <session> open|eval — never click/follow/like/comment actions.
+    // Every opencli call must be the read-only login check or browser <session> open|eval —
+    // never click/follow/like/comment actions.
     for (const call of calls) {
+      if (call.args[0] === "auth") {
+        expect(call.args).toEqual(["auth", "status", "--site", "tiktok", "-f", "json"]);
+        continue;
+      }
       expect(call.args[0]).toBe("browser");
       const verb = call.args[2];
       expect(["open", "eval"]).toContain(verb);
@@ -107,5 +113,37 @@ describe("fetchTikTok", () => {
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("expected failure result");
     expect(result.error.length).toBeGreaterThan(0);
+  });
+});
+
+describe("fetchTikTok login + empty results", () => {
+  it("returns tiktok_auth when opencli says TikTok is not logged in, and opens nothing", async () => {
+    const calls: string[][] = [];
+    const runner: Runner = async (_cmd, args) => {
+      calls.push(args);
+      return ok(JSON.stringify([{ site: "tiktok", status: "not_logged_in", logged_in: false }]));
+    };
+    const result = await fetchTikTok({ queries: ["ai gadget"], maxPerQuery: 5, runner });
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("expected failure");
+    expect(result.error).toMatch(/^tiktok_auth/);
+    expect(calls).toHaveLength(1);
+  });
+
+  it("reports a query with zero cards via onSkip instead of staying silent", async () => {
+    const skipped: string[] = [];
+    const runner: Runner = async (_cmd, args) => {
+      if (args[0] === "auth") return ok("not json");
+      if (args.includes("eval")) return ok("[]");
+      return ok("");
+    };
+    const result = await fetchTikTok({
+      queries: ["nothing here"],
+      maxPerQuery: 5,
+      runner,
+      onSkip: (q, e) => skipped.push(`${q}: ${e}`),
+    });
+    expect(result.ok).toBe(true);
+    expect(skipped).toEqual(["nothing here: tiktok_no_results"]);
   });
 });

@@ -33,20 +33,26 @@ its own source tool; see Credentials below.
 
 For each run:
 
-1. **Fetch.** One lane's source (`src/sources/*.ts`) pulls new items and they're
-   upserted into a local SQLite store (deduped on `(lane, id)`).
+1. **Fetch.** Each source you name (`@handle`, `list:<id>`, a TikTok term...)
+   is fetched and upserted into a local SQLite store (deduped on `(lane, id)`).
+   A source that fails — a mistyped handle, an empty TikTok page — is skipped
+   and printed as `! skipped <source>: <error>`; the rest of the run continues.
 2. **Score.** `jev ask` scores every unscored item in the store against the
    lane's rubric (`src/rubrics/*.ts`) — fast and cheap, no LLM generation.
 3. **Enrich.** `grok` (headless, schema-constrained) enriches only the top
-   `--enrich-top` undelivered items that clear the rubric's rank threshold.
+   `--top` items *fetched by this run* that clear the rubric's rank threshold.
    Items already enriched are never re-sent to grok.
-4. **Digest.** A preview is written to `<out>/<date>.html` and `<out>/digest.md`
-   on every run, dry or not.
-5. **Deliver.** On a non-dry run, each undelivered top item is marked
-   delivered and the digest markdown is written to a new
-   `<out>/outbox/<timestamp>-<lane>.md` file. A pi job is expected to forward
-   that file's content to Telegram and then delete it — signal-radar itself
-   never talks to Telegram.
+4. **Deliver.** On a non-dry run, the top undelivered items fetched by this run
+   are marked delivered and written to a new
+   `<home>/outbox/<timestamp>-<lane>.md` file, so `signal-radar x @a` never
+   sends a post from `@b` fetched earlier.
+5. **Digest.** `<home>/<date>.html` and `digest.md` are rewritten on every run
+   and cover every lane seen that day (not just the last run), including
+   Grok's extra fields such as the creators lane's outreach angle.
+
+The delivery step writes files only. A pi job is expected to forward each
+outbox file to Telegram and then delete it — signal-radar itself never talks
+to Telegram.
 
 ## Develop
 
@@ -106,9 +112,23 @@ Each source after `signal-radar x` (default: `feed`) maps to a read-only
 - `list:<id>` — a Twitter List (`twitter list`)
 - anything else — free-text search (`twitter search`)
 
-**Known issue (2026-09-24):** `twitter-cli` 0.8.5's `search` returns HTTP 404
-(`x_search_unavailable`) upstream. Use `feed`, `@handle`, or `list:<id>`
-until that's fixed.
+**Search workaround.** Plain `twitter-cli` 0.8.5 `search` returns HTTP 404
+([twitter-cli#88](https://github.com/public-clis/twitter-cli/issues/88)): x.com's
+new homepage no longer links the script it needs for the
+`x-client-transaction-id` header. signal-radar runs `search` through
+`shims/twitter_x_home.py` with twitter-cli's own Python, which initialises that
+header from the logged-in `x.com/home` page instead (the same fix used in
+[figma-navi-video#162](https://github.com/nannantown/figma-navi-video/pull/162)).
+Nothing on disk is patched. If search still fails you get
+`x_search_unavailable`; `feed`, `@handle` and `list:<id>` don't need the
+header. Heavy use can trigger `x_rate_limited`; wait ~15 minutes.
+
+### TikTok errors
+
+The TikTok lane first asks `opencli auth status --site tiktok`. If opencli says
+the Chrome profile is not logged in, the run fails with `tiktok_auth` instead of
+silently returning nothing. A query page with no videos is reported as
+`! skipped <term>: tiktok_no_results`.
 
 ## Commands
 

@@ -91,7 +91,9 @@ export const creatorsRubric: Rubric = {
   questions,
   state,
   rank,
-  threshold: 0.5,
+  // rank is a product of three factors, so strong creators land around 0.35-0.45 (live run,
+  // 2026-09-26: the best of 30 was 0.446). 0.5 meant outreach drafts were never generated.
+  threshold: 0.3,
   enrichSchema,
   enrichPrompt,
 };

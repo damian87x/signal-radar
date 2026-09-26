@@ -12,6 +12,24 @@ export interface FetchTikTokOptions {
   queries: string[];
   maxPerQuery: number;
   runner?: Runner;
+  /** Called for a query that yielded nothing, so an empty run is never silent. */
+  onSkip?: (query: string, error: string) => void;
+}
+
+/**
+ * Asks opencli whether its Chrome session is logged in to TikTok. Returns false only when
+ * opencli explicitly says so; any other outcome (old opencli, parse error) is "unknown" -> null.
+ */
+async function tiktokLoggedIn(runner: Runner): Promise<boolean | null> {
+  const r = await runner("opencli", ["auth", "status", "--site", "tiktok", "-f", "json"]);
+  if (r.code !== 0) return null;
+  try {
+    const rows: unknown = JSON.parse(r.stdout);
+    const row = Array.isArray(rows) ? (rows as Array<Record<string, unknown>>).find((x) => x?.site === "tiktok") : null;
+    return typeof row?.logged_in === "boolean" ? row.logged_in : null;
+  } catch {
+    return null;
+  }
 }
 
 interface RawCard {
@@ -107,6 +125,13 @@ export async function fetchTikTok(options: FetchTikTokOptions): Promise<Result<I
   const items: Item[] = [];
   const fetchedAt = new Date().toISOString();
 
+  if ((await tiktokLoggedIn(runner)) === false) {
+    return {
+      ok: false,
+      error: "tiktok_auth: opencli's Chrome is not logged in to TikTok (check: opencli auth status --site tiktok)",
+    };
+  }
+
   for (const query of cappedQueries) {
     const url = urlForQuery(query);
 
@@ -133,10 +158,12 @@ export async function fetchTikTok(options: FetchTikTokOptions): Promise<Result<I
       return { ok: false, error: `failed to parse opencli output for "${query}": ${String(e)}` };
     }
 
+    const before = items.length;
     for (const card of cards.slice(0, maxPerQuery)) {
       const item = toItem(card, fetchedAt);
       if (item) items.push(item);
     }
+    if (items.length === before) options.onSkip?.(query, "tiktok_no_results");
   }
 
   return { ok: true, value: items };

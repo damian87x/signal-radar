@@ -42,6 +42,13 @@ function enrichTags(scored: Scored): string[] {
   return Array.isArray(tags) ? tags.filter((t): t is string => typeof t === "string") : [];
 }
 
+/** Every other string field Grok returned (outreach_angle, product_name, lead, ...), labelled. */
+function enrichExtras(scored: Scored): Array<[string, string]> {
+  return Object.entries(scored.enrich ?? {})
+    .filter(([k, v]) => k !== "why" && k !== "tags" && typeof v === "string" && v.trim() !== "")
+    .map(([k, v]) => [k.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase()), v as string]);
+}
+
 function truncate(text: string, max: number): string {
   const collapsed = text.replace(/\s+/g, " ").trim();
   return collapsed.length > max ? `${collapsed.slice(0, max - 1)}…` : collapsed;
@@ -60,6 +67,9 @@ function renderItemHtml(rank: number, scored: Scored): string {
   <span class="author">${escapeHtml(item.author)}</span>
   <p class="text">${escapeHtml(item.text)}</p>
   ${why ? `<p class="why">${escapeHtml(why)}</p>` : ""}
+  ${enrichExtras(scored)
+    .map(([label, value]) => `<p class="extra"><strong>${escapeHtml(label)}:</strong> ${escapeHtml(value)}</p>`)
+    .join("\n  ")}
   ${tags.length ? `<p class="tags">${tags.map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join(" ")}</p>` : ""}
   <p class="link">${linkHtml}</p>
 </li>`;
@@ -118,6 +128,7 @@ function renderItemMarkdown(rank: number, scored: Scored): string {
   const tags = enrichTags(scored);
   const lines = [`${rank}. ${item.author} — ${truncate(item.text, 240)}`];
   if (why) lines.push(why);
+  for (const [label, value] of enrichExtras(scored)) lines.push(`${label}: ${value}`);
   if (tags.length) lines.push(tags.map((t) => `#${t}`).join(" "));
   if (href) lines.push(href);
   return `${lines.join("\n")}\n`;

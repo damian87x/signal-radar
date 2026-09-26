@@ -37,17 +37,23 @@ export interface RunLaneCounts {
   scored: number;
   enriched: number;
   delivered: number;
+  /** Sources that failed while others succeeded, as "<source>: <error>". */
+  skipped: string[];
 }
+
+/** Items per lane shown in the cumulative daily digest. */
+const DIGEST_PER_LANE = 25;
 
 interface FetchedLane {
   items: Item[];
   rubric: Rubric;
 }
 
-async function fetchLane(lane: Lane, deps: RunLaneDeps): Promise<Result<FetchedLane>> {
+async function fetchLane(lane: Lane, deps: RunLaneDeps, skipped: string[]): Promise<Result<FetchedLane>> {
+  const onSkip = (source: string, error: string) => skipped.push(`${source}: ${error}`);
   switch (lane) {
     case "x": {
-      const result = await fetchX({ queries: deps.queries ?? [], max: 50, runner: deps.runner });
+      const result = await fetchX({ queries: deps.queries ?? [], max: 50, runner: deps.runner, onSkip });
       if (!result.ok) return result;
       return { ok: true, value: { items: result.value, rubric: xAiRubric } };
     }
@@ -56,6 +62,7 @@ async function fetchLane(lane: Lane, deps: RunLaneDeps): Promise<Result<FetchedL
         queries: deps.queries ?? [],
         maxPerQuery: 50,
         runner: deps.runner,
+        onSkip,
       });
       if (!result.ok) return result;
       return { ok: true, value: { items: result.value, rubric: tiktokProductRubric } };
@@ -92,9 +99,13 @@ export async function runLane(lane: Lane, deps: RunLaneDeps): Promise<Result<Run
   const dry = deps.dry ?? false;
   const { store, runner } = deps;
 
-  const fetchResult = await fetchLane(lane, deps);
+  const skipped: string[] = [];
+  const fetchResult = await fetchLane(lane, deps, skipped);
   if (!fetchResult.ok) return fetchResult;
   const { items, rubric } = fetchResult.value;
+  // Enrichment and delivery only consider what this run fetched, so `x @a` never
+  // delivers a backlog post from @b.
+  const fetchedIds = new Set(items.map((i) => i.id));
 
   const inserted = store.upsert(items);
 
@@ -106,7 +117,10 @@ export async function runLane(lane: Lane, deps: RunLaneDeps): Promise<Result<Run
     if (r.rank !== null) scored++;
   }
 
-  const topScored = store.undelivered(lane, enrichTop);
+  const topScored = store
+    .undelivered(lane, UNSCORED_LIMIT)
+    .filter((s) => fetchedIds.has(s.item.id))
+    .slice(0, enrichTop);
   let enriched = 0;
   for (const s of topScored) {
     if (s.rank === null || s.rank < rubric.threshold || s.enrich !== null) continue;
@@ -117,16 +131,14 @@ export async function runLane(lane: Lane, deps: RunLaneDeps): Promise<Result<Run
     }
   }
 
-  const date = deps.now().toISOString().slice(0, 10);
-  const sectionItems = store.undelivered(lane, enrichTop);
-  await writeDigest(deps.outDir, date, [{ lane, items: sectionItems }]);
-
   let delivered = 0;
+  const date = deps.now().toISOString().slice(0, 10);
   if (!dry) {
     const nowIso = deps.now().toISOString();
     const outboxDir = join(deps.outDir, "outbox");
     delivered = await deliver(store, lane, {
       limit: enrichTop,
+      ids: fetchedIds,
       now: nowIso,
       render: (topItems) => renderMarkdown(date, [{ lane, items: topItems }]),
       send: async (md) => {
@@ -137,5 +149,13 @@ export async function runLane(lane: Lane, deps: RunLaneDeps): Promise<Result<Run
     });
   }
 
-  return { ok: true, value: { fetched: items.length, inserted, scored, enriched, delivered } };
+  // Cumulative daily digest: every lane's items seen or delivered today, not just this run.
+  const today = store.since(`${date}T00:00:00.000Z`, DIGEST_PER_LANE);
+  const lanes: Lane[] = ["x", "tiktok", "creators", "mail"];
+  const sections = lanes
+    .map((l) => ({ lane: l, items: today.filter((s) => s.item.lane === l) }))
+    .filter((s) => s.items.length > 0);
+  await writeDigest(deps.outDir, date, sections);
+
+  return { ok: true, value: { fetched: items.length, inserted, scored, enriched, delivered, skipped } };
 }

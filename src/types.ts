@@ -72,5 +72,7 @@ export interface Store {
   /** Unscored items for a lane. */
   unscored(lane: Lane, limit: number): Item[];
   markDelivered(lane: Lane, ids: string[], at: string): void;
+  /** Scored items of every lane fetched or delivered at/after `since` (ISO), rank desc per lane. */
+  since(since: string, limitPerLane: number): Scored[];
   close(): void;
 }

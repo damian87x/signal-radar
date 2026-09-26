@@ -123,7 +123,7 @@ describe("cli main", () => {
     expect(readFileSync(htmlPath, "utf-8")).toContain(TOP_TWEET_TEXT);
 
     const counts = JSON.parse(logSpy.mock.calls[0]?.[0] as string);
-    expect(counts).toEqual({ fetched: 3, inserted: 3, scored: 3, enriched: 1, delivered: 0 });
+    expect(counts).toEqual({ fetched: 3, inserted: 3, scored: 3, enriched: 1, delivered: 0, skipped: [] });
 
     expect(existsSync(path.join(outDir, "outbox"))).toBe(false);
 
@@ -187,14 +187,14 @@ describe("cli main", () => {
     const firstCode = await main(argv, { store, runner, now: NOW });
     expect(firstCode).toBe(0);
     const firstCounts = JSON.parse(logSpy.mock.calls[0]?.[0] as string);
-    expect(firstCounts).toEqual({ fetched: 3, inserted: 3, scored: 3, enriched: 1, delivered: 3 });
+    expect(firstCounts).toEqual({ fetched: 3, inserted: 3, scored: 3, enriched: 1, delivered: 3, skipped: [] });
 
     logSpy.mockClear();
 
     const secondCode = await main(argv, { store, runner, now: NOW });
     expect(secondCode).toBe(0);
     const secondCounts = JSON.parse(logSpy.mock.calls[0]?.[0] as string);
-    expect(secondCounts).toEqual({ fetched: 3, inserted: 0, scored: 0, enriched: 0, delivered: 0 });
+    expect(secondCounts).toEqual({ fetched: 3, inserted: 0, scored: 0, enriched: 0, delivered: 0, skipped: [] });
 
     logSpy.mockRestore();
     store.close();
@@ -273,5 +273,61 @@ describe("cli short form: signal-radar <lane> [sources...]", () => {
     expect(await main(["tiktok"])).toBe(1);
     expect(await main(["mail"])).toBe(1);
     errSpy.mockRestore();
+  });
+});
+
+describe("scoped delivery and cumulative digest", () => {
+  it("'x @mine' never delivers backlog posts fetched earlier for '@other'", async () => {
+    const home = tmpOutDir();
+    const store = createStore(":memory:");
+    const base = makeRunner();
+    const otherFixture = {
+      ...xSearchFixture,
+      data: xSearchFixture.data.map((t: { id: string }) => ({ ...t, id: `9${t.id}` })),
+    };
+    const runner: Runner = async (cmd, args, opts) => {
+      if (cmd === "twitter" && args[1] === "other") {
+        return { code: 0, stdout: JSON.stringify(otherFixture), stderr: "", timedOut: false };
+      }
+      return base(cmd, args, opts);
+    };
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    expect(await main(["x", "@other", "--dry", "--home", home], { store, runner, now: NOW })).toBe(0);
+    expect(await main(["x", "@mine", "--home", home], { store, runner, now: NOW })).toBe(0);
+
+    const outbox = readdirSync(path.join(home, "outbox"));
+    expect(outbox).toHaveLength(1);
+    const md = readFileSync(path.join(home, "outbox", outbox[0]!), "utf-8");
+    for (const t of otherFixture.data) expect(md).not.toContain(`/status/${t.id}`);
+    expect(md).toContain(`/status/${xSearchFixture.data[0].id}`);
+    logSpy.mockRestore();
+    store.close();
+  });
+
+  it("<date>.html keeps every lane seen today, not just the last run", async () => {
+    const home = tmpOutDir();
+    const store = createStore(":memory:");
+    store.upsert([
+      {
+        lane: "tiktok",
+        id: "tt1",
+        url: "https://www.tiktok.com/@shop/video/1",
+        author: "shop",
+        text: "TIKTOK_EARLIER_TODAY gadget demo",
+        metrics: {},
+        fetchedAt: "2026-09-24T01:00:00.000Z",
+      },
+    ]);
+    store.setScore("tiktok", "tt1", null, 0.9);
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    expect(await main(["x", "--dry", "--home", home], { store, runner: makeRunner(), now: NOW })).toBe(0);
+
+    const html = readFileSync(path.join(home, "2026-09-24.html"), "utf-8");
+    expect(html).toContain("TIKTOK_EARLIER_TODAY");
+    expect(html).toContain(TOP_TWEET_TEXT);
+    logSpy.mockRestore();
+    store.close();
   });
 });
