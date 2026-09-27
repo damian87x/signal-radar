@@ -18,7 +18,7 @@ It ships three ways from this one repo:
 | | Install | You get |
 |---|---|---|
 | CLI | `npm i -g github:damian87x/signal-radar` | the `signal-radar` command |
-| pi | `pi install git:github.com/damian87x/signal-radar` | `signal_radar` tool, `/radar` command, `signal-radar` skill |
+| pi | `pi install npm:signal-radar` (or `git:github.com/damian87x/signal-radar`) | `signal_radar` tool, `/radar` command, `signal-radar` skill |
 | Claude Code | `claude plugin marketplace add damian87x/signal-radar` then `claude plugin install signal-radar@signal-radar` | `signal-radar` skill, `/signal-radar:radar` command |
 
 The pi and Claude Code integrations call the CLI, so install it too.
