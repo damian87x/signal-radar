@@ -189,8 +189,9 @@ which the agent turns into a `schedule_prompt` tool call along the lines of
 
 - `jev ask` — roughly $0.00003–$0.00006 per judgment call (orchestrator
   ledger).
-- `grok` enrich — roughly $0.021 per enriched item (measured ~30k input
-  tokens per call). This is why `--enrich-top` defaults to 10, and why an
+- `grok` enrich — about 30k input tokens per call. Logged in with an xAI
+  membership (`grok` login), calls count against your plan's usage limits,
+  not money; at API prices it would be roughly $0.021 per enriched item. This is why `--enrich-top` defaults to 10, and why an
   item that already has an `enrich_json` row is never sent to grok again.
 - A live run over 50 real X feed posts ranked genuine AI launches around
   0.5–0.7 and scams/ads/engagement-bait around 0.00–0.01.
