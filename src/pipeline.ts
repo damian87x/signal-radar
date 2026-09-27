@@ -17,8 +17,10 @@ import { deliver } from "./deliver.ts";
 
 /** Cap on unscored items pulled from the store in a single run. */
 const UNSCORED_LIMIT = 500;
-/** How many recent undelivered posts per source lane feed the creators lane. */
+/** How many recent scored posts per source lane feed the creators lane. */
 const CREATOR_SOURCE_LIMIT = 200;
+/** Posts fetched or delivered within this many days feed the creators lane, delivered or not. */
+const CREATOR_WINDOW_DAYS = 7;
 
 export interface RunLaneDeps {
   store: Store;
@@ -68,10 +70,12 @@ async function fetchLane(lane: Lane, deps: RunLaneDeps, skipped: string[]): Prom
       return { ok: true, value: { items: result.value, rubric: tiktokProductRubric } };
     }
     case "creators": {
-      const candidates = creatorsFrom([
-        ...deps.store.undelivered("x", CREATOR_SOURCE_LIMIT),
-        ...deps.store.undelivered("tiktok", CREATOR_SOURCE_LIMIT),
-      ]);
+      const since = new Date(deps.now().getTime() - CREATOR_WINDOW_DAYS * 86_400_000).toISOString();
+      const candidates = creatorsFrom(
+        deps.store
+          .since(since, CREATOR_SOURCE_LIMIT)
+          .filter((s) => s.item.lane === "x" || s.item.lane === "tiktok"),
+      );
       const items = await enrichXProfile(candidates, deps.runner);
       return { ok: true, value: { items, rubric: creatorsRubric } };
     }

@@ -10,10 +10,21 @@ passed straight to twitter-cli, e.g.: python twitter_x_home.py search "AI agents
 """
 import sys
 
-import bs4
-from twitter_cli import client as C
-from x_client_transaction import ClientTransaction
-from x_client_transaction.utils import generate_headers, get_ondemand_file_url
+try:
+    import bs4
+    from twitter_cli import client as C
+    from x_client_transaction import ClientTransaction
+    from x_client_transaction.utils import generate_headers, get_ondemand_file_url
+except ImportError as exc:  # twitter-cli changed its internals: run it unpatched
+    C = None
+    _IMPORT_ERROR = exc
+
+# Private names the patch relies on. If an upgrade renames any of them, run twitter-cli unpatched
+# (plain search then 404s as before, or works if upstream fixed #88) instead of crashing.
+_NEEDED = (
+    "_ct_init_attempted", "_load_ct_cache", "_cookie_string", "_save_ct_cache",
+)
+_NEEDED_MODULE = ("_get_cffi_session", "_update_features_from_html", "logger")
 
 
 def _ensure_client_transaction(self):
@@ -38,7 +49,26 @@ def _ensure_client_transaction(self):
         C.logger.warning("Failed to init ClientTransaction (x.com/home): %s", exc)
 
 
-C.TwitterClient._ensure_client_transaction = _ensure_client_transaction
+def _compatible():
+    if C is None:
+        return "import failed: %s" % _IMPORT_ERROR
+    missing = [n for n in _NEEDED_MODULE if not hasattr(C, n)]
+    cls = getattr(C, "TwitterClient", None)
+    if cls is None or not hasattr(cls, "_ensure_client_transaction"):
+        missing.append("TwitterClient._ensure_client_transaction")
+    else:
+        src = getattr(cls, "__init__", None)
+        names = getattr(getattr(src, "__code__", None), "co_names", ()) + tuple(dir(cls))
+        missing += [n for n in _NEEDED if n not in names]
+    return "missing " + ", ".join(missing) if missing else None
+
+
+_problem = _compatible()
+if _problem:
+    print("signal-radar shim: twitter-cli internals changed (%s); running it unpatched" % _problem,
+          file=sys.stderr)
+else:
+    C.TwitterClient._ensure_client_transaction = _ensure_client_transaction
 
 from twitter_cli.cli import cli  # noqa: E402
 

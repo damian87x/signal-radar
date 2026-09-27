@@ -22,12 +22,19 @@ It ships three ways from this one repo:
 | Claude Code | `claude plugin marketplace add damian87x/signal-radar` then `claude plugin install signal-radar@signal-radar` | `signal-radar` skill, `/signal-radar:radar` command |
 
 The pi and Claude Code integrations call the CLI, so install it too.
-Requirements: Node 24; the `jev` CLI on your PATH with a TypeSafe key (it
-ships as `bin/jev` in
-[hermes-jev-skills](https://github.com/kerpopule/hermes-jev-skills), which is
-stdlib-only Python and runs without Hermes; run `jev doctor` to check); and the
-`grok` CLI (xAI Grok Build), logged in, for enrichment. Each lane also needs
+Requirements: Node 24; the `jev` CLI on your PATH with a TypeSafe key; and
+the `grok` CLI (xAI Grok Build), logged in, for enrichment. Each lane also needs
 its own source tool; see Credentials below.
+
+`jev` ships as `bin/jev` in
+[hermes-jev-skills](https://github.com/kerpopule/hermes-jev-skills). It is
+stdlib-only Python, needs no Hermes, and runs from its checkout:
+
+```bash
+git clone --depth 1 https://github.com/kerpopule/hermes-jev-skills ~/.local/share/hermes-jev-skills
+ln -s ~/.local/share/hermes-jev-skills/bin/jev ~/.local/bin/jev
+jev doctor
+```
 
 ## How it works
 
@@ -122,7 +129,9 @@ new homepage no longer links the script it needs for the
 `shims/twitter_x_home.py` with twitter-cli's own Python, which initialises that
 header from the logged-in `x.com/home` page instead (the same fix used in
 [figma-navi-video#162](https://github.com/nannantown/figma-navi-video/pull/162)).
-Nothing on disk is patched. If search still fails you get
+Nothing on disk is patched. If a twitter-cli upgrade renames the internals the
+shim patches, it prints a warning and runs twitter-cli unpatched instead of
+crashing. If search still fails you get
 `x_search_unavailable`; `feed`, `@handle` and `list:<id>` don't need the
 header. Heavy use can trigger `x_rate_limited`; wait ~15 minutes.
 
@@ -198,10 +207,9 @@ which the agent turns into a `schedule_prompt` tool call along the lines of
   item whose caption names no product simply gets no enrichment.
 - All scraped/emailed text is wrapped in a delimited data block and the prompt
   tells jev/grok to treat it as untrusted data. For grok the delimiter is
-  nonce-tagged and neutralised; the mail rubric escapes `<`/`>`. Known gap:
-  the x/tiktok/creators rubrics use fixed markers without escaping, so a
-  crafted post can nudge its own jev score (jev only returns probabilities —
-  it cannot act).
+  nonce-tagged and neutralised; the mail rubric escapes `<`/`>`; the
+  x/tiktok/creators rubrics turn any run of `---` in scraped text or handles
+  into an em dash, so a post cannot fake the end of its data block.
 - No auto-DM, auto-reply, or auto-follow. The creators lane only aggregates
-  and scores authors already seen in other lanes; nothing here contacts
-  anyone.
+  and scores authors of X and TikTok posts scored in the last 7 days
+  (delivered or not); nothing here contacts anyone.

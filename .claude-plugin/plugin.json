@@ -1,6 +1,6 @@
 {
   "name": "signal-radar",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Read-only radar for X, TikTok, creators and email: TypeSafe Jev scores every item, headless Grok explains the top few, you get a digest. Adds the signal-radar skill and /signal-radar:radar.",
   "author": {"name": "Damian Borek"},
   "homepage": "https://github.com/damian87x/signal-radar",

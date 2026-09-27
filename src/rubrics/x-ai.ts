@@ -1,5 +1,6 @@
 // X (Twitter) rubric: recognise substantive AI posts and rank them above hype/bait.
 import type { Item, JevAnswer, JevAnswers, JevQuestion, Rubric } from "../types.ts";
+import { defuseMarkers } from "./defuse.ts";
 
 const DATA_START = "---BEGIN TWEET TEXT---";
 const DATA_END = "---END TWEET TEXT---";
@@ -61,10 +62,10 @@ function scoreOf(answers: JevAnswers, id: string): number {
 
 function state(item: Item): string {
   return [
-    `Author: ${item.author}`,
+    `Author: ${defuseMarkers(item.author)}`,
     `Metrics: ${JSON.stringify(item.metrics)}`,
     DATA_START,
-    item.text,
+    defuseMarkers(item.text),
     DATA_END,
   ].join("\n");
 }

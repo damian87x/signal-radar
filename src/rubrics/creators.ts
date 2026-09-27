@@ -2,6 +2,7 @@
 // human to review. This rubric never sends, follows, DMs or emails anyone — enrich
 // only produces a draft paragraph and a reason.
 import type { Item, JevAnswer, JevAnswers, JevQuestion, Rubric } from "../types.ts";
+import { defuseMarkers } from "./defuse.ts";
 
 const DATA_START = "---BEGIN CREATOR POSTS---";
 const DATA_END = "---END CREATOR POSTS---";
@@ -49,10 +50,10 @@ function noulOf(answers: JevAnswers, id: string): number {
 
 function state(item: Item): string {
   return [
-    `Handle: ${item.author}`,
+    `Handle: ${defuseMarkers(item.author)}`,
     `Metrics: ${JSON.stringify(item.metrics)}`,
     DATA_START,
-    item.text,
+    defuseMarkers(item.text),
     DATA_END,
   ].join("\n");
 }

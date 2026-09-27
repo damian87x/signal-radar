@@ -2,6 +2,7 @@
 // Momentum is arithmetic (views/hour, log-scaled) computed here in code — Jev never does arithmetic.
 
 import type { Item, JevAnswers, Rubric } from "../types.ts";
+import { defuseMarkers } from "./defuse.ts";
 
 function clamp(n: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, n));
@@ -28,10 +29,10 @@ export function momentum(item: Item): number {
 function state(item: Item): string {
   return [
     `platform: tiktok`,
-    `author: ${item.author}`,
+    `author: ${defuseMarkers(item.author)}`,
     `metrics: ${JSON.stringify(item.metrics)}`,
     `---CAPTION START---`,
-    item.text,
+    defuseMarkers(item.text),
     `---CAPTION END---`,
   ].join("\n");
 }
